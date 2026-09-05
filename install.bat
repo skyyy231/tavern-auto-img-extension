@@ -1,8 +1,10 @@
 @echo off
-setlocal
+setlocal enabledelayedexpansion
 title Tavern Auto Image - 一键安装桥
 set "AUTO="
 if /i "%~1"=="--auto" set "AUTO=1"
+set "RESTART="
+if /i "%~2"=="--restart" set "RESTART=1"
 
 echo ============================================
 echo   Tavern Auto Image  一键安装（酒馆服务端桥）
@@ -73,11 +75,12 @@ if not "%RPID%"=="" (
     echo        下一步的重启 = 关闭酒馆「整个服务」（你的酒馆窗口/聊天会短暂断开），
     echo        再从后台重新启动酒馆。这不是只刷新网页！网页刷新由你自己做。
     set "ANS=N"
+    if defined RESTART set "ANS=Y"
     if not defined AUTO set /p ANS=确认重启酒馆整个服务？ Y=立即重启 / N=我稍后自己重启（默认N）
-    if /i "%ANS:~0,1%"=="Y" (
+    if /i "!ANS:~0,1!"=="Y" (
         echo         正在关闭酒馆服务进程并重新启动...
         powershell -NoProfile -Command "Stop-Process -Id %RPID% -Force -Confirm:$false" >nul 2>&1
-        timeout /t 2 /nobreak >nul
+        ping 127.0.0.1 -n 3 >nul 2>&1
         powershell -NoProfile -Command "Start-Process -FilePath 'node' -ArgumentList 'server.js' -WorkingDirectory '%ROOT%' -WindowStyle Hidden" >nul 2>&1
         echo         已重启（后台无窗口运行）。等 10 秒左右，刷新酒馆网页即可。
     ) else (
