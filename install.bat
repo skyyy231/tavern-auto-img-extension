@@ -1,13 +1,16 @@
 @echo off
 setlocal enabledelayedexpansion
-title Tavern Auto Image - 一键安装桥
+title Tavern Auto Image - 桥安装器
 set "AUTO="
 if /i "%~1"=="--auto" set "AUTO=1"
 set "RESTART="
 if /i "%~2"=="--restart" set "RESTART=1"
+set "UNINSTALL="
+if /i "%~1"=="--uninstall" set "UNINSTALL=1"
 
 echo ============================================
-echo   Tavern Auto Image  一键安装（酒馆服务端桥）
+echo   Tavern Auto Image  桥安装器
+echo   （安装模式：安装桥 / 卸载模式：--uninstall）
 echo ============================================
 echo.
 
@@ -24,12 +27,17 @@ set "ROOT=%NEXT%"
 goto findroot
 :rootnotfound
 echo [错误] 找不到酒馆根目录（没找到 config.yaml）。
-echo 请把 install.bat 放到酒馆根目录（有 config.yaml 和 server.js 的那个文件夹）再双击。
+echo 请把本安装器放到酒馆根目录或扩展目录下再运行。
 echo.
 if not defined AUTO pause
 exit /b 1
 :rootfound
 echo [1/4] 酒馆根目录：%ROOT%
+echo.
+
+if defined UNINSTALL goto uninstall
+
+REM ═══════════════════ 安装模式 ═══════════════════
 
 REM ── 1. 校验 Node ──
 where node >nul 2>&1
@@ -65,8 +73,26 @@ echo [3/4] 桥已复制到：plugins\tavern-auto-img-bridge.mjs
 REM ── 3. 开启服务端插件开关（config.yaml 为 UTF-8 读取/写入）──
 powershell -NoProfile -Command "$p='%ROOT%config.yaml'; $c=[System.IO.File]::ReadAllText($p,[System.Text.Encoding]::UTF8); if($c -match '(?m)^enableServerPlugins:\s*false'){ $c=$c -replace '(?m)^enableServerPlugins:\s*false','enableServerPlugins: true'; [System.IO.File]::WriteAllText($p,$c,(New-Object System.Text.UTF8Encoding($false))); 'config.yaml：enableServerPlugins 已开启。' } elseif($c -match '(?m)^enableServerPlugins:\s*true'){ 'config.yaml：enableServerPlugins 已是 true（无需修改）。' } else { 'config.yaml：未找到该设置，帮你追加一行。'; $c=$c + \"`r`n`r`nenableServerPlugins: true`r`n`r`n\"; [System.IO.File]::WriteAllText($p,$c,(New-Object System.Text.UTF8Encoding($false))); '已追加 enableServerPlugins: true。' }"
 echo [4/4] 服务端插件开关完成。
+echo.
 
-REM ── 4. 检测酒馆是否在运行 ──
+goto restart_prompt
+
+REM ═══════════════════ 卸载模式 ═══════════════════
+:uninstall
+echo [卸1/3] 检查当前桥状态...
+if exist "%ROOT%plugins\tavern-auto-img-bridge.mjs" (
+    del /q "%ROOT%plugins\tavern-auto-img-bridge.mjs" >nul 2>&1
+    echo        已删除 plugins\tavern-auto-img-bridge.mjs
+) else (
+    echo        桥文件不在（本来就没装或已卸载）。
+)
+echo [卸2/3] 关闭服务端插件开关...
+powershell -NoProfile -Command "$p='%ROOT%config.yaml'; $c=[System.IO.File]::ReadAllText($p,[System.Text.Encoding]::UTF8); if($c -match '(?m)^enableServerPlugins:\s*true'){ $c=$c -replace '(?m)^enableServerPlugins:\s*true','enableServerPlugins: false'; [System.IO.File]::WriteAllText($p,$c,(New-Object System.Text.UTF8Encoding($false))); 'config.yaml：enableServerPlugins 已关闭。' } else { 'config.yaml：enableServerPlugins 不是 true（无需修改）。' }"
+echo [卸3/3] 完成。
+echo.
+
+:restart_prompt
+REM ── 4. 检测酒馆是否在运行（装/卸都问是否重启）──
 set "RPID="
 for /f %%i in ('powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0detect_running.ps1"') do set "RPID=%%i"
 if not "%RPID%"=="" (
@@ -74,9 +100,13 @@ if not "%RPID%"=="" (
     echo [提示] 检测到酒馆正在运行（进程 %RPID%）。
     echo        下一步的重启 = 关闭酒馆「整个服务」（你的酒馆窗口/聊天会短暂断开），
     echo        再从后台重新启动酒馆。这不是只刷新网页！网页刷新由你自己做。
-    set "ANS=N"
+    set "ANS=Y"
     if defined RESTART set "ANS=Y"
-    if not defined AUTO set /p ANS=确认重启酒馆整个服务？ Y=立即重启 / N=我稍后自己重启（默认N）
+    if defined UNINSTALL set "ANS=Y"
+    if not defined AUTO (
+        set /p ANS=是否重启酒馆让改动生效？ Y=立即重启 / N=稍后自己重启（默认Y）
+        if not defined ANS set "ANS=Y"
+    )
     if /i "!ANS:~0,1!"=="Y" (
         echo         正在关闭酒馆服务进程并重新启动...
         powershell -NoProfile -Command "Stop-Process -Id %RPID% -Force -Confirm:$false" >nul 2>&1
@@ -90,13 +120,17 @@ if not "%RPID%"=="" (
     )
 ) else (
     echo.
-    echo 酒馆当前未运行。下次启动酒馆时，桥会自动随酒馆运行。
+    echo 酒馆当前未运行。下次启动酒馆时，改动自动生效。
 )
 
 echo.
 echo ============================================
-echo   安装完成！打开酒馆后右下角出现 闪电图标 按钮
-echo   文生图控制台即安装成功。
+if defined UNINSTALL (
+    echo   卸载完成！桥已移除。以后想再装：再双击本安装器即可。
+) else (
+    echo   安装完成！打开酒馆后右下角出现 闪电图标 按钮
+    echo   文生图控制台即安装成功。
+)
 echo ============================================
 echo.
 if not defined AUTO pause
