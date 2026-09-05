@@ -1,35 +1,53 @@
-# Tavern Auto Image（自动文生图扩展）
+# Tavern Auto Image —— 酒馆自动文生图（扩展 + 桥）
+
+角色回复 → 提示词工程 → ComfyUI 出图 → 自动发进酒馆。
+
+> 本仓库 = **扩展本体 + 桥 + 安装器**（一键装/卸）。酒馆 1.12.14+ / Node 22+ 即可，无需 Python。
 
 ## 一、装扩展（酒馆里贴链接）
 
-把本仓库 URL 粘进酒馆助手/小白x 的「安装扩展程序」即可安装（Git URL，根目录即扩展本体）：
+酒馆顶部 ⚙ 扩展图标 → **安装扩展** → 粘贴：
 
 ```
 https://github.com/skyyy231/tavern-auto-img-extension
 ```
 
-> 只需要酒馆 1.12.14+；装完扩展右下角出现 ⚡ 按钮，这就是控制台入口。
+保存后刷新页面，右下角出现 ⚡ 按钮 = 扩展就绪。
 
-## 二、装桥（有了桥才能出图）
+## 二、装桥（双击一次，全自动）
 
-桥是"发动机"（连 ComfyUI、生成提示词、出图），必须放进酒馆服务端：
+安装扩展后，**桥文件 + install.bat 已随仓库下载到扩展目录**。打开：
 
-1. 从本仓库下载 `bridge/tavern-auto-img-bridge.mjs`（GitHub 页面 → 打开这个文件 → 右侧 Raw / 下载）
-2. 把它放到酒馆目录的 **`plugins/`** 文件夹（没有就新建）
-3. 打开酒馆根目录 `config.yaml`，找到 `enableServerPlugins: false` 改成 `true`
-4. **重启酒馆** → 桥随酒馆自动运行（监听 8645），右下角 ⚡ 打开控制台即可用
+```
+酒馆目录/data/default-user/extensions/tavern-auto-img-extension/install.bat
+（若装在全局：酒馆目录/public/scripts/extensions/third-party/tavern-auto-img-extension/install.bat）
+```
 
-> 要求 Node 22+（酒馆本身自带的运行环境）。无需 Python。
+**双击 install.bat** → 它自动：
+1. 向上定位酒馆根目录（在哪双击都行）
+2. 从扩展目录里找到桥 → 复制到 `plugins/`
+3. 开启 `enableServerPlugins: true`
+4. 检测酒馆在运行时：**默认 Y 自动重启整个酒馆**（不是只刷新网页）
 
-## 三、可选配置
+完事后刷新酒馆页面 → 控制台红条消失 = 已通车。
 
-桥的配置自动生成在 `data/default-user/tavern-auto-img/config.json`，一般不用动。
-填 ComfyUI 地址（默认 `http://127.0.0.1:8188`）、模型目录等都在控制台里操作。
+> 也支持从 Release 下载一键包：https://github.com/skyyy231/tavern-auto-img/releases （install.bat + 桥 + 教程）
 
-## 常见问题
+## 三、日常使用
 
-- **打开控制台提示"无法连接桥接服务"** → 桥没装/没起，检查上面"二、装桥"步骤
-- **出图报错"依赖文件缺失"** → 按报错提示把缺的 CLIP/VAE 文件放进 ComfyUI 的 models/text_encoders 或 models/vae
-- **模型列表空** → 确认 ComfyUI 已启动且在 8188 端口，点"刷新"即可
+- ⚡ = 控制台：总开关 / 模型 / LoRA / 速度档位 / 提示词规则 / 自定义工作流
+- 控制台标题栏：📂 **扩展目录**（一键弹资源管理器到扩展文件夹）、🧹 **卸载桥**（悬停有解释，点击即卸+自动重启）
+- 出图失败会：阶段提示 + 失败红框 + 重试 + 「停止任务」急停
 
-完整说明/源码：https://github.com/skyyy231/tavern-auto-img
+## 四、卸载桥
+
+1. 控制台 🧹 一键卸载（推荐），或
+2. `install.bat --uninstall`，或
+3. 见扩展目录里的 **卸载桥教程.txt**（三种方法+重装说明）
+
+卸载只关"出图引擎"；扩展保留、配置保留；重装 = 再双击 install.bat。
+
+## 五、其它
+
+- 完整包（Python 桥备选 / 文档）：https://github.com/skyyy231/tavern-auto-img
+- 换机器：装扩展（链接）→ 双击 install.bat → 完，两个动作
