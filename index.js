@@ -110,9 +110,20 @@ function ensureOverlay() {
             .append('<div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#4158d0,#6a5af9);display:flex;align-items:center;justify-content:center;font-size:23px;box-shadow:0 6px 18px rgba(80,90,220,.45);">⚡</div>')
             .append('<div><div style="font-size:19px;font-weight:700;letter-spacing:.5px;background:linear-gradient(90deg,#818cf8,#38bdf8);-webkit-background-clip:text;background-clip:text;color:transparent;">自动文生图控制台</div><div style="font-size:12px;color:rgba(230,230,242,.55);margin-top:2px;">角色回复 → 提示词 → ComfyUI 出图</div></div>')
             .append('<span id="ta-img-bind" style="display:inline-flex;align-items:center;gap:6px;background:rgba(251,191,36,.10);border:1px solid rgba(251,191,36,.4);color:#fbbf24;font-size:13px;padding:4px 10px;border-radius:999px;">⌛ 联动检测中…</span>'));
+    $head.append('<span id="ta-img-open-dir" title="打开扩展文件夹（找桥文件/install.bat）" style="cursor:pointer;font-size:14px;color:#7dd3fc;padding:4px 8px;border-radius:8px;border:1px solid rgba(125,211,252,.35);margin-right:8px;">📂 扩展目录</span>');
     $head.append('<span id="ta-img-close" style="cursor:pointer;font-size:20px;color:#9aa;padding:4px 8px;border-radius:8px;">✕</span>');
     $card.append($head);
     $card.find('#ta-img-close').on('click', closePanel);
+    $('#ta-img-open-dir').off('click').on('click', async function () {
+        try {
+            const r = await fetch(BRIDGE + '/open-dir', { method: 'POST' });
+            const d = await r.json();
+            if (!d.ok) throw new Error(d.error || '');
+            toastr.info('已打开扩展文件夹（若没弹出请检查系统）', '自动文生图');
+        } catch (e) {
+            toastr.error('无法打开（桥未启动？）——扩展文件夹在：酒馆/data/default-user/extensions/', '自动文生图');
+        }
+    });
     const $host = $('<div id="ta-img-panel-host" style="display:flex;flex-direction:column;gap:6px;"></div>');
     $card.append($host);
     $ov.append($card);

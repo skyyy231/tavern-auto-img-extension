@@ -548,6 +548,17 @@ const server = http.createServer(async (req, res) => {
                 saveState();
                 return jsonReply(res, { ok: true, ...ST });
             }
+            if (p === '/open-dir') {
+                try {
+                    const d = path.join(process.cwd(), 'data', 'default-user', 'extensions');
+                    if (process.platform === 'win32') {
+                        const { spawn } = await import('node:child_process');
+                        const ch = spawn('explorer.exe', [d], { detached: true, stdio: 'ignore' });
+                        ch.unref();
+                    }
+                    return jsonReply(res, { ok: true, dir: d });
+                } catch (e) { return jsonReply(res, { ok: false, error: String(e.message || e) }); }
+            }
             if (p === '/cancel') {
                 cancelFlag = true;
                 if (currentProc && !currentProc.killed) { try { currentProc.kill(); } catch { /* 忽略 */ } }
