@@ -550,7 +550,15 @@ const server = http.createServer(async (req, res) => {
             }
             if (p === '/open-dir') {
                 try {
-                    const d = path.join(process.cwd(), 'data', 'default-user', 'extensions');
+                    const cwd0 = process.cwd();
+                    const ourExt = [
+                        path.join(cwd0, 'data', 'default-user', 'extensions', 'tavern-auto-img-extension'),
+                        path.join(cwd0, 'data', 'default-user', 'extensions', 'TavernAutoImage'),
+                        path.join(cwd0, 'public', 'scripts', 'extensions', 'third-party', 'tavern-auto-img'),
+                    ].find(p0 => fs.existsSync(p0));
+                    const userExtDir = path.join(cwd0, 'data', 'default-user', 'extensions');
+                    const globalExtDir = path.join(cwd0, 'public', 'scripts', 'extensions', 'third-party');
+                    const d = ourExt || (fs.existsSync(globalExtDir) ? globalExtDir : userExtDir);
                     if (process.platform === 'win32') {
                         const { spawn } = await import('node:child_process');
                         const ch = spawn('explorer.exe', [d], { detached: true, stdio: 'ignore' });
