@@ -3,22 +3,30 @@ setlocal
 title Tavern Auto Image - 一键安装桥
 set "AUTO="
 if /i "%~1"=="--auto" set "AUTO=1"
-set "ROOT=%~dp0"
-if /i not "%ROOT:~-1%"=="\" set "ROOT=%ROOT%\"
 
 echo ============================================
 echo   Tavern Auto Image  一键安装（酒馆服务端桥）
 echo ============================================
 echo.
 
-REM ── 0. 校验：必须在酒馆根目录运行 ──
-if not exist "%ROOT%config.yaml" (
-    echo [错误] 没找到 config.yaml。
-    echo 请把 install.bat 放到「酒馆根目录」（有 config.yaml 和 server.js 的那个文件夹）再双击。
-    echo.
-    if not defined AUTO pause
-    exit /b 1
-)
+REM ── 0. 自动定位酒馆根目录：从当前目录向上逐层找 config.yaml ──
+set "ROOT=%~dp0"
+set "PREV="
+:findroot
+if not defined PREV set "PREV=%ROOT%"
+if exist "%ROOT%config.yaml" goto rootfound
+for %%i in ("%ROOT%.") do set "NEXT=%%~dpi"
+if /i "%NEXT%"=="%PREV%" goto rootnotfound
+set "PREV=%NEXT%"
+set "ROOT=%NEXT%"
+goto findroot
+:rootnotfound
+echo [错误] 找不到酒馆根目录（没找到 config.yaml）。
+echo 请把 install.bat 放到酒馆根目录（有 config.yaml 和 server.js 的那个文件夹）再双击。
+echo.
+if not defined AUTO pause
+exit /b 1
+:rootfound
 echo [1/4] 酒馆根目录：%ROOT%
 
 REM ── 1. 校验 Node ──
