@@ -1031,9 +1031,9 @@ function showBridgeHelp() {
           '<div style="font-weight:700;margin-bottom:6px;">⚠️ 桥未启动（出图功能不可用）</div>' +
           '<div style="margin-bottom:8px;line-height:1.7;">桥 = 发动机，随酒馆自动运行。没检测到它可能还没安装：</div>' +
           '<ol style="margin:0 0 8px 18px;line-height:1.7;">' +
-          '<li>下载一键安装包：<a href="https://github.com/skyyy231/tavern-auto-img/releases/download/v1.1.0/tavern-auto-img-%E4%B8%80%E9%94%AE%E5%AE%89%E8%A3%85.zip" target="_blank" style="color:#7dd3fc;">点我下载（安装包）</a></li>' +
-          '<li>把 install.bat 放进酒馆根目录，双击，输 Y 自动重启</li>' +
-          '<li>再刷新本页面，这条提示会自动消失</li>' +
+          '<li>桥文件已随本扩展下载好了（扩展目录 bridge/ 里）</li>' +
+          '<li>打开扩展文件夹里的 <b>install.bat</b> 双击（即本项目仓库根目录，随安装下载的），它会自动：复制桥到 plugins/ + 开开关 + 问你要不要重启酒馆</li>' +
+          '<li>完成后强刷本页面，这条提示自动消失</li>' +
           '</ol>' +
           '</div>').insertAfter($('#ta-img-card .list-group-item').first());
     }
