@@ -66,14 +66,14 @@ echo [4/4] 服务端插件开关完成。
 
 REM ── 4. 检测酒馆是否在运行 ──
 set "RPID="
-for /f %%i in ('powershell -NoProfile -Command "$p=Get-CimInstance Win32_Process -Filter \"Name='node.exe'\" -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -match 'server[.]js' } | Select-Object -First 1; if($p){ write-output $p.ProcessId }"') do set "RPID=%%i"
+for /f %%i in ('powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0detect_running.ps1"') do set "RPID=%%i"
 if not "%RPID%"=="" (
     echo.
     echo [提示] 检测到酒馆正在运行（进程 %RPID%）。
     echo        下一步的重启 = 关闭酒馆「整个服务」（你的酒馆窗口/聊天会短暂断开），
     echo        再从后台重新启动酒馆。这不是只刷新网页！网页刷新由你自己做。
     set "ANS=N"
-    if not defined AUTO set /p ANS=确认重启酒馆整个服务？(Y=立即重启，N=我稍后自己重启；默认 N) 
+    if not defined AUTO set /p ANS=确认重启酒馆整个服务？ Y=立即重启 / N=我稍后自己重启（默认N）
     if /i "%ANS:~0,1%"=="Y" (
         echo         正在关闭酒馆服务进程并重新启动...
         powershell -NoProfile -Command "Stop-Process -Id %RPID% -Force -Confirm:$false" >nul 2>&1
