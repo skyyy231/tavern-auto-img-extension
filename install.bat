@@ -69,17 +69,21 @@ set "RPID="
 for /f %%i in ('powershell -NoProfile -Command "$p=Get-CimInstance Win32_Process -Filter \"Name='node.exe'\" -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -match 'server[.]js' } | Select-Object -First 1; if($p){ write-output $p.ProcessId }"') do set "RPID=%%i"
 if not "%RPID%"=="" (
     echo.
-    echo [提示] 检测到酒馆正在运行（进程 %RPID%）。桥要重启酒馆后才会生效。
+    echo [提示] 检测到酒馆正在运行（进程 %RPID%）。
+    echo        下一步的重启 = 关闭酒馆「整个服务」（你的酒馆窗口/聊天会短暂断开），
+    echo        再从后台重新启动酒馆。这不是只刷新网页！网页刷新由你自己做。
     set "ANS=N"
-    if not defined AUTO set /p ANS=是否现在自动重启酒馆？(Y/N，默认 N) 
+    if not defined AUTO set /p ANS=确认重启酒馆整个服务？(Y=立即重启，N=我稍后自己重启；默认 N) 
     if /i "%ANS:~0,1%"=="Y" (
-        echo         正在重启酒馆...
+        echo         正在关闭酒馆服务进程并重新启动...
         powershell -NoProfile -Command "Stop-Process -Id %RPID% -Force -Confirm:$false" >nul 2>&1
         timeout /t 2 /nobreak >nul
         powershell -NoProfile -Command "Start-Process -FilePath 'node' -ArgumentList 'server.js' -WorkingDirectory '%ROOT%' -WindowStyle Hidden" >nul 2>&1
-        echo         已重启。等几秒后刷新酒馆页面即可。
+        echo         已重启（后台无窗口运行）。等 10 秒左右，刷新酒馆网页即可。
     ) else (
-        echo         好的，你可以稍后手动重启酒馆（关闭酒馆窗口重新打开，或点 Start.bat）。
+        echo         好的。请【完全关闭酒馆】——关掉启动酒馆的那个 CMD/Start.bat 窗口，
+        echo         然后重新双击 Start.bat（或你平时启动酒馆的方式）启动酒馆。
+        echo         【不要】只点浏览器刷新，服务端桥需要酒馆服务重启才生效。
     )
 ) else (
     echo.
